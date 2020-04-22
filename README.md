@@ -56,7 +56,7 @@ Here is an example of the code used for displaying the table of employees, inclu
 
 Here is an example of a table that was generated using Employee-Tracker:
 
-![](Assets\EmployeeTable.png.png)
+![image](Assets\EmployeeTable.png.png)
 
 
 ## Languages Used
