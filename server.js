@@ -5,6 +5,7 @@ const allRoles = [];
 const managers = [];
 const managerIds = [];
 const employees = [];
+const departments = [];
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -27,6 +28,7 @@ function generateTable(){
     let query = "SELECT employees.employee_id, employees.first_name, employees.last_name, employees.role_id, role.role_id, role.title, role.salary, department.name ";
     query += "FROM employees LEFT JOIN role ON (employees.role_id = role.role_id) LEFT JOIN department ON (role.department_id = department.department_id)";
     connection.query(query, function(err, res) {
+        if (err) throw err;
         const values = [];
         console.log(res);
         for(i=0; i<res.length; i++){
@@ -176,6 +178,7 @@ function editRoles() {
             name: "roleChoice",
             choices: [
                 "Add a new role",
+                "Change the role of an existing employee",
                 "Delete an existing role",
                 "Return to the main menu",
                 "View roles table",
@@ -183,15 +186,20 @@ function editRoles() {
             ]
         }
     ]).then(function(data){
-        switch(data.employeeChoice) {
+        switch(data.roleChoice) {
             case "Add a new role":
                 addRole();
                 break;
-            case "Delete a role":
+            case "Change the role of an existing employee":
+                changeRole();
+                break;
+            case "Delete an existing role":
                 deleteRole();
                 break;
             case "View roles table":
                 displayRoles();
+                mainMenu();
+                break;
             case "Return to the main menu":
                 mainMenu();
                 break;
@@ -202,7 +210,63 @@ function editRoles() {
 }
 
 function addRole() {
-    
+    populateRoles();
+    populateDepts();
+    inquirer.prompt([
+        {
+            type: "input",
+            message: "What is the name of the role you would like to add?",
+            name: "roleTitle"
+        },
+        {
+            type: "Input",
+            message: "What is the salary of your new role?",
+            name: "roleSalary"
+        },
+        {
+            type: "list",
+            message: "What department does your new role belong to?",
+            name: "dept",
+            choices: departments
+        }
+    ]).then(function(data) {
+        console.log("Adding new role.....\n");
+        let deptId = departments.indexOf(data.dept) + 1;
+
+        var query = connection.query(
+            "INSERT INTO role SET ?",
+            {
+                title: data.roleTitle,
+                salary: data.roleSalary,
+                department_id: deptId
+            },
+            function(err, res) {
+                console.log(res.affectedRows + " product inserted!\n");
+            }
+        )
+        mainMenu();
+    });
+}
+
+function displayRoles() {
+    populateRoles();
+    let query = "SELECT * FROM role";
+    connection.query(query, function(err, res) {
+        if (err) throw err;
+        const values = [];
+        for(i=0; i<res.length; i++){
+            let obj = [];
+            obj.push(res[i].role_id);
+            obj.push(res[i].title);
+            obj.push(res[i].salary);
+            obj.push(res[i].department_id);
+            values.push(obj);
+        }
+        console.table("\n------------------------------------------")
+        console.table(["Role ID","Title", "Salary", "Department ID"], values);
+        console.log("-----------------------------------");
+        console.log("Use the arrows to continue navigating the menu");
+    });
 }
 
 function populateRoles() {
@@ -247,4 +311,15 @@ function populateEmployees() {
         }
         // console.log(employees);
     });    
+}
+
+function populateDepts() {
+
+    connection.query("SELECT department.name FROM department", function(err, res) {
+        if (err) throw err;
+
+        for(var i=0; i<res.length; i++) {
+            departments.push(res[i].name);
+        }
+    })
 }
