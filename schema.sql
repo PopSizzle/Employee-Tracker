@@ -8,7 +8,7 @@ CREATE TABLE department (
     id INT NOT NULL AUTO_INCREMENT,
     name VARCHAR(30),
     PRIMARY KEY (id)
-) ENGINE=INNODB;
+);
 
 INSERT INTO department (name)
 VALUES ("Engineering"),("Finance"), ("Legal");
@@ -18,10 +18,9 @@ CREATE TABLE role (
     title VARCHAR (50),
     salary INT (10),
     department_id INT,
-    FOREIGN KEY (department_id) 
-        REFERENCES department(id),
+    FOREIGN KEY (department_id) REFERENCES department(id),
     PRIMARY KEY (id)
-) ENGINE=INNODB;
+);
 
 INSERT INTO role (title, salary, department_id)
 VALUES ("Software Engineer", 110000, 1), ("Lead Engineer", 160000, 1),("Accountant", 80000, 2),("Finance Executive", 120000, 2),("Lawyer", 90000, 3),("Legal Team Lead", 150000, 3);
@@ -32,8 +31,8 @@ CREATE TABLE employees (
   last_name VARCHAR(30) NOT NULL,
   manager_id INT,
   role_id INT,
-  FOREIGN KEY (role_id) 
-    REFERENCES role(id),
+  FOREIGN KEY (role_id) REFERENCES role(id),
+  FOREIGN KEY (manager_id) REFERENCES employees(id),
   PRIMARY KEY (id)
 );
 
