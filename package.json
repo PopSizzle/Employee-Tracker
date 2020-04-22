@@ -1,0 +1,26 @@
+{
+  "name": "employee-tracker",
+  "version": "1.0.0",
+  "description": "An app to track your employees, departments, and roles",
+  "main": "server.js",
+  "dependencies": {
+    "console.table": "^0.10.0",
+    "inquirer": "^7.1.0",
+    "mysql": "^2.18.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PopSizzle/Employee-Tracker.git"
+  },
+  "author": "Sam Poppe",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/PopSizzle/Employee-Tracker/issues"
+  },
+  "homepage": "https://github.com/PopSizzle/Employee-Tracker#readme"
+}

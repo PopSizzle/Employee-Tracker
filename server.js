@@ -30,7 +30,7 @@ function generateTable(){
     connection.query(query, function(err, res) {
         if (err) throw err;
         const values = [];
-        console.log(res);
+        
         for(i=0; i<res.length; i++){
             let obj = [];
             obj.push(res[i].employee_id);
@@ -180,8 +180,8 @@ function editRoles() {
                 "Add a new role",
                 "Change the role of an existing employee",
                 "Delete an existing role",
-                "Return to the main menu",
                 "View roles table",
+                "Return to the main menu",
                 "Exit"
             ]
         }
@@ -198,7 +198,6 @@ function editRoles() {
                 break;
             case "View roles table":
                 displayRoles();
-                mainMenu();
                 break;
             case "Return to the main menu":
                 mainMenu();
@@ -266,6 +265,41 @@ function displayRoles() {
         console.table(["Role ID","Title", "Salary", "Department ID"], values);
         console.log("-----------------------------------");
         console.log("Use the arrows to continue navigating the menu");
+    });
+    mainMenu();
+}
+
+function editDepts() {
+    inquirer.prompt([
+        {
+            type: "list",
+            message: "What would you like to edit in the department database?",
+            name: "deptChoice",
+            choices: [
+                "Add a new department",
+                "Delete an existing department",
+                "View departments table",
+                "Return to the main menu",
+                "Exit"
+            ]
+        }
+    ]).then(function(data){
+        switch(data.roleChoice) {
+            case "Add a new department":
+                addDept();
+                break;
+            case "Delete an existing department":
+                deleteDept();
+                break;
+            case "View departments table":
+                deleteRole();
+                break;
+            case "Return to the main menu":
+                mainMenu();
+                break;
+            default:
+                connection.end(console.log("Thank you have a good day!"));
+        }
     });
 }
 
