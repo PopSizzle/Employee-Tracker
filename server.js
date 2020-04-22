@@ -2,10 +2,13 @@ const inquirer = require("inquirer");
 const mysql = require("mysql");
 const ctable = require("console.table");
 const allRoles = [];
+const roleIds = [];
 const managers = [];
 const managerIds = [];
 const employees = [];
+const employeeIds = [];
 const departments = [];
+const deptIds = [];
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -21,6 +24,10 @@ var connection = mysql.createConnection({
 connection.connect(function(err) {
     if(err) throw err;
     welcome();
+    // populateEmployees();
+    // populateManagers();
+    // populateRoles();
+    // populateDepts();
 });
 
 function generateTable(){
@@ -120,10 +127,11 @@ function editEmployees() {
 }
 
 function addEmployee(){
+        // async function pop() { 
     populateRoles();
     populateManagers();
     populateEmployees();
-    inquirer.prompt([
+    (inquirer.prompt([
         {
             type: "input",
             message: "What is the first name of your new employee?",
@@ -167,7 +175,7 @@ function addEmployee(){
             }
         )
         mainMenu();
-    });
+    }));
 }
 
 function editRoles() {
@@ -247,6 +255,45 @@ function addRole() {
     });
 }
 
+function changeRole() {
+    populateEmployees();
+    populateRoles();
+    
+    inquirer.prompt([
+        {
+            type: "list",
+            message: "Please select the employee whose role you would like to edit",
+            name: "employeeName",
+            choices: employees
+        },
+        {
+            type: "list",
+            message: "Please select the role that you wish to assign to this employee",
+            name: "newRole",
+            choices: allRoles
+        }
+    ]).then(function(data) {
+        console.log("Updating employee roles.....\n");
+        const index = employees.indexOf(data.employeeName);
+        const empId = employeeIds[index];
+
+        var query = connection.query(
+            "UPDATE employees SET ? WHERE ?",
+            [
+                {
+                    role_id: data.newRole
+                },
+                {
+                    employee_id: empId
+                }
+            ],
+            function(err, res) {
+                console.log(res.affectedRows + " employee role updated!\n");
+
+            });
+    });
+}
+
 function displayRoles() {
     populateRoles();
     let query = "SELECT * FROM role";
@@ -284,7 +331,7 @@ function editDepts() {
             ]
         }
     ]).then(function(data){
-        switch(data.roleChoice) {
+        switch(data.deptChoice) {
             case "Add a new department":
                 addDept();
                 break;
@@ -292,7 +339,7 @@ function editDepts() {
                 deleteDept();
                 break;
             case "View departments table":
-                deleteRole();
+                displayDepts();
                 break;
             case "Return to the main menu":
                 mainMenu();
@@ -303,19 +350,92 @@ function editDepts() {
     });
 }
 
+function addDept() {
+    populateDepts();
+    inquirer.prompt([
+        {
+            type: "input",
+            message: "What is the name of the department you would like to add?",
+            name: "deptName"
+        }
+    ]).then(function(data) {
+        console.log("Adding new department.....\n");
+
+        var query = connection.query(
+            "INSERT INTO department SET ?",
+            {
+                name: data.deptName
+            },
+            function(err, res) {
+                console.log(res.affectedRows + " product inserted!\n");
+            }
+        )
+        mainMenu();
+    });
+}
+
+function deleteDept(){
+    populateDepts();
+    inquirer.prompt([
+        {
+            type: "list",
+            message: "What is the name of the department you would like to delete?",
+            name: "deptName",
+            choices: departments
+        }
+    ]).then(function(data) {
+        console.log("Deleting department.....\n");
+
+        var query = connection.query(
+            "DELETE FROM department WHERE ?",
+            {
+                name: data.deptName
+            },
+            function(err, res) {
+                console.log(res.affectedRows + " product inserted!\n");
+            }
+        )
+        mainMenu();
+    });
+}
+
+function displayDepts() {
+    populateRoles();
+    let query = "SELECT * FROM department";
+    connection.query(query, function(err, res) {
+        if (err) throw err;
+        const values = [];
+        for(i=0; i<res.length; i++){
+                let obj = [];
+                obj.push(res[i].department_id);
+                obj.push(res[i].name);
+                values.push(obj);
+        }
+        console.table("\n------------------------------------------")
+        console.table(["Department ID","name"], values);
+        console.log("-----------------------------------");
+        console.log("Use the arrows to continue navigating the menu");
+    });
+    mainMenu();
+}
+
+
 function populateRoles() {
     
-    connection.query("SELECT role.title FROM role", function(err, res) {
+    connection.query("SELECT role.title, role_id FROM role", function(err, res) {
         if (err) throw err;
         for(var i=0; i<res.length; i++){
             allRoles.push(res[i].title);
+            roleIds.push(res[i].role_id);
         }
+        // console.log(allRoles);
+        // console.log(roleIds);
     })
 }
 
 function populateManagers(){
 
-    connection.query("SELECT employees.first_name, employees.last_name, employees.manager_id, employees.id FROM employees", function(err, res) {
+    connection.query("SELECT employees.first_name, employees.last_name, employees.manager_id, employees.employee_id FROM employees", function(err, res) {
         if (err) throw err;
 
         for(var i=0; i<res.length; i++){
@@ -324,7 +444,7 @@ function populateManagers(){
                 name += res[i].first_name + " ";
                 name+= res[i].last_name;
                 managers.push(name);
-                managerIds.push(res[i].id);
+                managerIds.push(res[i].employee_id);
             }
         }
         // console.log(managers);
@@ -334,7 +454,7 @@ function populateManagers(){
 
 function populateEmployees() {
 
-    connection.query("SELECT employees.first_name, employees.last_name FROM employees", function(err, res) {
+    connection.query("SELECT employees.first_name, employees.last_name, employees.employee_id FROM employees", function(err, res) {
         if (err) throw err;
 
         for(var i=0; i<res.length; i++){
@@ -342,18 +462,23 @@ function populateEmployees() {
             name += res[i].first_name + " ";
             name+= res[i].last_name;
             employees.push(name);
+            employeeIds.push(res[i].employee_id)
         }
         // console.log(employees);
+        // console.log(employeeIds);
     });    
 }
 
 function populateDepts() {
 
-    connection.query("SELECT department.name FROM department", function(err, res) {
+    connection.query("SELECT department.name, department_id FROM department", function(err, res) {
         if (err) throw err;
 
         for(var i=0; i<res.length; i++) {
             departments.push(res[i].name);
+            deptIds.push(res[i].department_id);
         }
+        // console.log(departments);
+        // console.log(deptIds);
     })
 }
