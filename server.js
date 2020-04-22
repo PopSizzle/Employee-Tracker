@@ -19,18 +19,19 @@ var connection = mysql.createConnection({
 
 connection.connect(function(err) {
     if(err) throw err;
-    // welcome();
-    populateEmployees();
+    welcome();
 });
 
 function generateTable(){
-    let query = "SELECT employees.id, employees.first_name, employees.last_name, employees.role_id, role.id, role.title, role.salary, department.name ";
-    query += "FROM employees LEFT JOIN role ON (employees.role_id = role.id) LEFT JOIN department ON (role.department_id = department.id)";
+    populateEmployees();
+    let query = "SELECT employees.employee_id, employees.first_name, employees.last_name, employees.role_id, role.role_id, role.title, role.salary, department.name ";
+    query += "FROM employees LEFT JOIN role ON (employees.role_id = role.role_id) LEFT JOIN department ON (role.department_id = department.department_id)";
     connection.query(query, function(err, res) {
         const values = [];
+        console.log(res);
         for(i=0; i<res.length; i++){
             let obj = [];
-            obj.push(res[i].id);
+            obj.push(res[i].employee_id);
             obj.push(res[i].first_name);
             obj.push(res[i].last_name);
             obj.push(res[i].title);
@@ -144,8 +145,64 @@ function addEmployee(){
             choices: managers
         }
     ]).then(function(data) {
-        
-    })
+        console.log("Adding new employee.....\n");
+        // console.log(data);
+        // console.log(data.manager)
+        let managerIndex = managers.indexOf(data.manager);
+        let roleIndex = allRoles.indexOf(data.role) + 1;
+        // console.log(managerIndex);
+        // console.log(roleIndex);
+        var query = connection.query(
+            "INSERT INTO employees SET ?",
+            {
+                first_name: data.firstName,
+                last_name: data.lastName,
+                manager_id: managerIds[managerIndex],
+                role_id: roleIndex
+            },
+            function(err, res) {
+                console.log(res.affectedRows + " product inserted!\n");
+            }
+        )
+        mainMenu();
+    });
+}
+
+function editRoles() {
+    inquirer.prompt([
+        {
+            type: "list",
+            message: "What would you like to edit in the roles database?",
+            name: "roleChoice",
+            choices: [
+                "Add a new role",
+                "Delete an existing role",
+                "Return to the main menu",
+                "View roles table",
+                "Exit"
+            ]
+        }
+    ]).then(function(data){
+        switch(data.employeeChoice) {
+            case "Add a new role":
+                addRole();
+                break;
+            case "Delete a role":
+                deleteRole();
+                break;
+            case "View roles table":
+                displayRoles();
+            case "Return to the main menu":
+                mainMenu();
+                break;
+            default:
+                connection.end(console.log("Thank you have a good day!"));
+        }
+    });
+}
+
+function addRole() {
+    
 }
 
 function populateRoles() {
@@ -189,6 +246,5 @@ function populateEmployees() {
             employees.push(name);
         }
         // console.log(employees);
-        console.log(employees.length);
     });    
 }
