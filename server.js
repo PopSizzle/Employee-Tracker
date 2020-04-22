@@ -23,15 +23,17 @@ var connection = mysql.createConnection({
 
 connection.connect(function(err) {
     if(err) throw err;
+    populateEmployees();
+    populateManagers();
+    populateRoles();
+    populateDepts();
+   
     welcome();
-    // populateEmployees();
-    // populateManagers();
-    // populateRoles();
-    // populateDepts();
+    
 });
 
 function generateTable(){
-    populateEmployees();
+    // populateEmployees();
     let query = "SELECT employees.employee_id, employees.first_name, employees.last_name, employees.role_id, role.role_id, role.title, role.salary, department.name ";
     query += "FROM employees LEFT JOIN role ON (employees.role_id = role.role_id) LEFT JOIN department ON (role.department_id = department.department_id)";
     connection.query(query, function(err, res) {
@@ -123,14 +125,15 @@ function editEmployees() {
             default:
                 connection.end(console.log("Thank you have a good day!"));
         }
+        populateEmployees();
     })
 }
 
 function addEmployee(){
-        // async function pop() { 
-    populateRoles();
-    populateManagers();
-    populateEmployees();
+    // async function pop() { 
+    // populateRoles();
+    // populateManagers();
+    // populateEmployees();
     (inquirer.prompt([
         {
             type: "input",
@@ -174,6 +177,7 @@ function addEmployee(){
                 console.log(res.affectedRows + " product inserted!\n");
             }
         )
+        populateEmployees();
         mainMenu();
     }));
 }
@@ -217,8 +221,8 @@ function editRoles() {
 }
 
 function addRole() {
-    populateRoles();
-    populateDepts();
+    // populateRoles();
+    // populateDepts();
     inquirer.prompt([
         {
             type: "input",
@@ -251,13 +255,14 @@ function addRole() {
                 console.log(res.affectedRows + " product inserted!\n");
             }
         )
+        populateRoles();
         mainMenu();
     });
 }
 
 function changeRole() {
-    populateEmployees();
-    populateRoles();
+    // populateEmployees();
+    // populateRoles();
     
     inquirer.prompt([
         {
@@ -291,6 +296,7 @@ function changeRole() {
                 console.log(res.affectedRows + " employee role updated!\n");
 
             });
+            populateRoles();
     });
 }
 
@@ -370,6 +376,7 @@ function addDept() {
                 console.log(res.affectedRows + " product inserted!\n");
             }
         )
+        populateDepts();
         mainMenu();
     });
 }
@@ -395,6 +402,7 @@ function deleteDept(){
                 console.log(res.affectedRows + " product inserted!\n");
             }
         )
+        populateDepts();
         mainMenu();
     });
 }
