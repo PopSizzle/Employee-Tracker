@@ -283,6 +283,7 @@ function addRole() {
             }
         )
         populateRoles();
+        
         mainMenu();
     });
 }
@@ -345,7 +346,7 @@ function deleteRole(){
                 role_id: thisRoleId
             },
             function(err, res) {
-                console.log(res);
+                
                 if(res.length > 0){
                     let affectedEmp = res.map(({first_name, last_name}) => ({
                         name: `${first_name} ${last_name}`
@@ -357,21 +358,21 @@ function deleteRole(){
                     console.log(message);
                     console.log("\nPlease modify employee roles before deleting this role.")
                     console.log("-----------------------------------------------------------");
-                    mainMenu();
+                    return mainMenu();
                 }
 
-                // else{
-                //     connection.query(
-                //         "DELETE FROM employees WHERE ?",
-                //         {
-                //             employee_id: id
-                //         },
-                //         function(err, res) {
-                //             console.log(data.employee + " deleted!\n");
-                //             populateEmployees();
-                //             mainMenu();
-                //         });
-                // }
+                else{
+                    connection.query(
+                        "DELETE FROM role WHERE ?",
+                        {
+                            role_id: thisRoleId
+                        },
+                        function(err, res) {
+                            console.log(data.role + " deleted!\n");
+                            populateRoles();
+                            mainMenu();
+                        });
+                }
             }
         )
     })
