@@ -279,11 +279,10 @@ function addRole() {
                 department_id: deptId
             },
             function(err, res) {
-                console.log(res.affectedRows + " product inserted!\n");
+                console.log(res.roleTitle + " added!");
             }
         )
         populateRoles();
-        
         mainMenu();
     });
 }
