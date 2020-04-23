@@ -129,6 +129,33 @@ function editEmployees() {
     })
 }
 
+function deleteEmployee() {
+    
+    (inquirer.prompt([
+        {
+            type: "list",
+            message: "What is the first name of the employee you would like to delete?",
+            name: "employee",
+            choices: employees
+        }
+    ]).then(function(data) {
+        const index = employees.indexOf(data.employee);
+        const id = employeeIds[index];
+        
+        connection.query(
+            "DELETE FROM employees WHERE ?",
+            {
+                employee_id: id
+            },
+            function(err, res) {
+                console.log(data.employee + " deleted!\n");
+                populateEmployees();
+                mainMenu();
+            });
+
+    }));
+}
+
 function addEmployee(){
     // async function pop() { 
     // populateRoles();
@@ -293,11 +320,61 @@ function changeRole() {
                 }
             ],
             function(err, res) {
-                console.log(res.affectedRows + " employee role updated!\n");
+                console.log("employee role updated!\n");
 
             });
             populateRoles();
     });
+}
+
+function deleteRole(){
+    inquirer.prompt([
+        {
+            type: "list",
+            message: "What is the name of the role you would like to add?",
+            name: "role",
+            choices: allRoles
+        }
+    ]).then(function(data) {
+        const index = allRoles.indexOf(data.role);
+        const thisRoleId = roleIds[index];
+
+        connection.query(
+            "SELECT first_name, last_name FROM employees WHERE ?",
+            {
+                role_id: thisRoleId
+            },
+            function(err, res) {
+                console.log(res);
+                if(res.length > 0){
+                    let affectedEmp = res.map(({first_name, last_name}) => ({
+                        name: `${first_name} ${last_name}`
+                    }));
+                    let message = "The following employees currently have this role:";
+                    for(var i = 0; i < affectedEmp.length; i++){
+                        message += "\n " + affectedEmp[i].name;
+                    }
+                    console.log(message);
+                    console.log("\nPlease modify employee roles before deleting this role.")
+                    console.log("-----------------------------------------------------------");
+                    mainMenu();
+                }
+
+                // else{
+                //     connection.query(
+                //         "DELETE FROM employees WHERE ?",
+                //         {
+                //             employee_id: id
+                //         },
+                //         function(err, res) {
+                //             console.log(data.employee + " deleted!\n");
+                //             populateEmployees();
+                //             mainMenu();
+                //         });
+                // }
+            }
+        )
+    })
 }
 
 function displayRoles() {
